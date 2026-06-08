@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from .utils import ensure_parent
+from .utils import dump_json, write_text
 
 
 SUITE_TEMPLATE = {
@@ -85,10 +84,8 @@ def init_suite(path: str, force: bool = False) -> Path:
         root / "fixtures" / "sample.tool.transcripts.json": TRANSCRIPTS_TEMPLATE,
     }
     for file_path, content in files.items():
-        ensure_parent(file_path)
-        file_path.write_text(json.dumps(content, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+        dump_json(content, file_path)
 
     readme_path = root / "README.md"
-    ensure_parent(readme_path)
-    readme_path.write_text(README_TEMPLATE, encoding="utf-8", newline="\n")
+    write_text(readme_path, README_TEMPLATE)
     return root

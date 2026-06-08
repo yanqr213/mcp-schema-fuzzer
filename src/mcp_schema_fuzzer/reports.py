@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Dict, List
 
-from .utils import dump_json, ensure_parent, severity_rank
+from .utils import dump_json, severity_rank, write_text
 
 
 def write_report_bundle(report: Dict[str, Any], output_base: Path) -> Dict[str, str]:
@@ -13,10 +13,8 @@ def write_report_bundle(report: Dict[str, Any], output_base: Path) -> Dict[str, 
     md_path = output_base.with_suffix(".md")
     xml_path = output_base.with_suffix(".xml")
     dump_json(report, json_path)
-    ensure_parent(md_path)
-    md_path.write_text(render_markdown(report), encoding="utf-8", newline="\n")
-    ensure_parent(xml_path)
-    xml_path.write_text(render_junit(report), encoding="utf-8", newline="\n")
+    write_text(md_path, render_markdown(report))
+    write_text(xml_path, render_junit(report))
     return {"json": str(json_path), "markdown": str(md_path), "junit": str(xml_path)}
 
 

@@ -6,7 +6,8 @@ from pathlib import Path
 
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
 
 
 def build_basic_suite(root: Path) -> Path:

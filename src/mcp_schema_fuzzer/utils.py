@@ -21,6 +21,12 @@ def dump_json(data: Any, path: Path) -> None:
         handle.write("\n")
 
 
+def write_text(path: Path, content: str) -> None:
+    ensure_parent(path)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
