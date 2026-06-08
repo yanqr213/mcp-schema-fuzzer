@@ -1,0 +1,114 @@
+{
+  "entries": [
+    {
+      "case_id": "resource.list.missing-required.uri",
+      "target": "resource.list",
+      "request": {
+        "page": 1,
+        "tags": ["api"]
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "uri is required"
+        }
+      }
+    },
+    {
+      "case_id": "resource.list.missing-required.page",
+      "target": "resource.list",
+      "request": {
+        "uri": "docs://project",
+        "tags": ["api"]
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "page is required"
+        }
+      }
+    },
+    {
+      "case_id": "resource.list.wrong-type.page",
+      "target": "resource.list",
+      "request": {
+        "uri": "docs://project",
+        "page": "forty-two",
+        "tags": ["api"]
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_TYPE",
+          "message": "page must be an integer"
+        }
+      }
+    },
+    {
+      "case_id": "resource.list.minimum.page",
+      "target": "resource.list",
+      "request": {
+        "uri": "docs://project",
+        "page": 0,
+        "tags": ["api"]
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "page must be at least 1"
+        }
+      }
+    },
+    {
+      "case_id": "resource.list.maximum.page",
+      "target": "resource.list",
+      "request": {
+        "uri": "docs://project",
+        "page": 51,
+        "tags": ["api"]
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "page must be at most 50"
+        }
+      }
+    },
+    {
+      "case_id": "resource.list.min-items.tags",
+      "target": "resource.list",
+      "request": {
+        "uri": "docs://project",
+        "page": 1,
+        "tags": []
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "tags must contain at least one item"
+        }
+      }
+    },
+    {
+      "case_id": "resource.list.max-items.tags",
+      "target": "resource.list",
+      "request": {
+        "uri": "docs://project",
+        "page": 1,
+        "tags": ["aa", "bb", "cc", "dd"]
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "tags must contain at most three items"
+        }
+      }
+    }
+  ]
+}

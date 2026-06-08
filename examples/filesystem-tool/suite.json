@@ -1,0 +1,13 @@
+{
+  "name": "filesystem-tool-suite",
+  "description": "Fixtures for a read-only filesystem MCP tool wrapper.",
+  "targets": [
+    {
+      "id": "filesystem.read",
+      "kind": "tool",
+      "schema": "schemas/filesystem.read.schema.json",
+      "examples": "fixtures/filesystem.read.examples.json",
+      "transcripts": "fixtures/filesystem.read.transcripts.json"
+    }
+  ]
+}

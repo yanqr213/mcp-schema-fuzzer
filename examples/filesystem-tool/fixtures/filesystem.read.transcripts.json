@@ -1,0 +1,274 @@
+{
+  "entries": [
+    {
+      "case_id": "filesystem.read.missing-required.path",
+      "target": "filesystem.read",
+      "request": {
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "path is required"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.missing-required.limit",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": "utf-8"
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "limit is required"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.wrong-type.path",
+      "target": "filesystem.read",
+      "request": {
+        "path": 42,
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_TYPE",
+          "message": "path must be a string"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.wrong-type.encoding",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": 42,
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_TYPE",
+          "message": "encoding must be a string"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.wrong-type.limit",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": "utf-8",
+        "limit": "forty-two"
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_TYPE",
+          "message": "limit must be an integer"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.invalid-enum.encoding",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": "__invalid_enum__",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "encoding must be one of the supported values"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.min-length.path",
+      "target": "filesystem.read",
+      "request": {
+        "path": "",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "path must not be empty"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.max-length.path",
+      "target": "filesystem.read",
+      "request": {
+        "path": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "path exceeds the maximum length"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.minimum.limit",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": "utf-8",
+        "limit": 0
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "limit must be at least 1"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.maximum.limit",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": "utf-8",
+        "limit": 4097
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "limit must be at most 4096"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.dangerous-path.path.etc-passwd",
+      "target": "filesystem.read",
+      "request": {
+        "path": "../../etc/passwd",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PATH",
+          "message": "path traversal is not allowed"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.dangerous-path.path.windows-hosts",
+      "target": "filesystem.read",
+      "request": {
+        "path": "..\\..\\Windows\\System32\\drivers\\etc\\hosts",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PATH",
+          "message": "path traversal is not allowed"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.overlong-text.path",
+      "target": "filesystem.read",
+      "request": {
+        "path": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "path exceeds the maximum length"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.overlong-text.encoding",
+      "target": "filesystem.read",
+      "request": {
+        "path": "docs/guide.md",
+        "encoding": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_ARGUMENT",
+          "message": "encoding must be one of the supported values"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.dangerous-path.path.root-ssh",
+      "target": "filesystem.read",
+      "request": {
+        "path": "/var/log/../../root/.ssh/id_rsa",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PATH",
+          "message": "path traversal is not allowed"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.dangerous-path.path.system-sam",
+      "target": "filesystem.read",
+      "request": {
+        "path": "C:\\Windows\\System32\\config\\SAM",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PATH",
+          "message": "path traversal is not allowed"
+        }
+      }
+    },
+    {
+      "case_id": "filesystem.read.dangerous-path.path.temp-secret",
+      "target": "filesystem.read",
+      "request": {
+        "path": "\\\\?\\C:\\Temp\\..\\secret.txt",
+        "encoding": "utf-8",
+        "limit": 128
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "INVALID_PATH",
+          "message": "path traversal is not allowed"
+        }
+      }
+    }
+  ]
+}

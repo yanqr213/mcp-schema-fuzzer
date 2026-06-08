@@ -1,0 +1,12 @@
+{
+  "examples": [
+    {
+      "name": "list project docs",
+      "payload": {
+        "uri": "docs://project",
+        "page": 1,
+        "tags": ["api"]
+      }
+    }
+  ]
+}

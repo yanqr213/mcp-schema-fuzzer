@@ -1,0 +1,12 @@
+{
+  "examples": [
+    {
+      "name": "read docs guide",
+      "payload": {
+        "path": "docs/guide.md",
+        "encoding": "utf-8",
+        "limit": 128
+      }
+    }
+  ]
+}

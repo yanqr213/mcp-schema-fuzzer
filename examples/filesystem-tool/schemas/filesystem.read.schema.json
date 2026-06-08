@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "required": ["path", "limit"],
+  "properties": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "encoding": {
+      "type": "string",
+      "enum": ["utf-8", "utf-16"]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4096
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "resource-tool-suite",
+  "description": "Fixtures for a resource listing wrapper.",
+  "targets": [
+    {
+      "id": "resource.list",
+      "kind": "resource",
+      "schema": "schemas/resource.list.schema.json",
+      "examples": "fixtures/resource.list.examples.json",
+      "transcripts": "fixtures/resource.list.transcripts.json"
+    }
+  ]
+}
