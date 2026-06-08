@@ -3,7 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from mcp_schema_fuzzer.reports import gate_report, render_junit, render_markdown, summarize_for_console, top_findings, write_report_bundle
+from mcp_schema_fuzzer.engine import run_fuzz
+from mcp_schema_fuzzer.reports import gate_report, render_junit, render_markdown, render_sarif, summarize_for_console, top_findings, write_report_bundle
+from mcp_schema_fuzzer.suite import load_suite
+from tests.helpers import build_basic_suite
 
 
 REPORT = {
@@ -32,6 +35,25 @@ class ReportTests(unittest.TestCase):
         self.assertIn("testcase", output)
         self.assertIn("demo.tool.minimum.count", output)
 
+    def test_render_sarif_maps_findings_to_results(self):
+        output = render_sarif(REPORT)
+        data = json.loads(output)
+        self.assertEqual(data["version"], "2.1.0")
+        run = data["runs"][0]
+        self.assertEqual(run["tool"]["driver"]["name"], "mcp-schema-fuzzer")
+        self.assertEqual(run["results"][0]["ruleId"], "missing_transcript")
+        self.assertEqual(run["results"][0]["level"], "warning")
+        self.assertIn("partialFingerprints", run["results"][0])
+
+    def test_render_sarif_points_to_transcript_fixture(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            suite_path = build_basic_suite(Path(tmp))
+            report = run_fuzz(load_suite(str(suite_path)))
+            data = json.loads(render_sarif(report))
+            missing = next(result for result in data["runs"][0]["results"] if result["ruleId"] == "missing_transcript")
+            uri = missing["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+            self.assertTrue(uri.endswith("fixtures/demo.tool.transcripts.json"))
+
     def test_gate_report_warning_fails(self):
         self.assertFalse(gate_report(REPORT, "warning"))
 
@@ -53,3 +75,5 @@ class ReportTests(unittest.TestCase):
                 self.assertTrue(Path(path).exists())
             data = json.loads(Path(result["json"]).read_text(encoding="utf-8"))
             self.assertEqual(data["suite"], "demo-suite")
+            sarif = json.loads(Path(result["sarif"]).read_text(encoding="utf-8"))
+            self.assertEqual(sarif["runs"][0]["automationDetails"]["id"], "demo-suite")

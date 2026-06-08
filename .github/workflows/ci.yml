@@ -24,3 +24,5 @@ jobs:
         run: python -m mcp_schema_fuzzer validate-fixtures examples/filesystem-tool/suite.json
       - name: Run fuzz smoke
         run: python -m mcp_schema_fuzzer fuzz examples/filesystem-tool/suite.json --output work/ci/filesystem --check error
+      - name: Validate SARIF smoke output
+        run: python -m json.tool work/ci/filesystem.sarif

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-schema-fuzzer"
-version = "0.1.0"
+version = "0.2.0"
 description = "Offline schema fuzzing for MCP servers and AI agent tools."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -33,8 +33,9 @@ classifiers = [
 mcp-schema-fuzzer = "mcp_schema_fuzzer.cli:main"
 
 [project.urls]
-Homepage = "https://openai.com/research"
-Documentation = "https://platform.openai.com/docs"
+Homepage = "https://github.com/yanqr213/mcp-schema-fuzzer"
+Documentation = "https://github.com/yanqr213/mcp-schema-fuzzer#readme"
+Issues = "https://github.com/yanqr213/mcp-schema-fuzzer/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

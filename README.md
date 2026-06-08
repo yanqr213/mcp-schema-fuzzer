@@ -1,6 +1,6 @@
 # mcp-schema-fuzzer
 
-`mcp-schema-fuzzer` 是一个离线 Python CLI，用来测试 MCP server、agent tool wrapper、resource handler 的输入校验和报错稳定性。它读取 MCP 风格 schema、JSON Schema 风格输入定义、示例 tool calls 与录制 transcript，自动生成缺字段、错类型、越界值、超长文本、危险路径字符串等 fuzz case，然后验证这些非法输入是否被稳定拒绝，并输出 Markdown、JSON、JUnit 报告供本地审查与 CI gate 使用。
+`mcp-schema-fuzzer` 是一个离线 Python CLI，用来测试 MCP server、agent tool wrapper、resource handler 的输入校验和报错稳定性。它读取 MCP 风格 schema、JSON Schema 风格输入定义、示例 tool calls 与录制 transcript，自动生成缺字段、错类型、越界值、超长文本、危险路径字符串等 fuzz case，然后验证这些非法输入是否被稳定拒绝，并输出 Markdown、JSON、JUnit、SARIF 报告供本地审查、CI gate 与 GitHub Code Scanning 使用。
 
 项目目标不是做在线渗透，也不会执行危险 payload。它专注于“接口契约是否守住边界”和“错误响应是否稳定可依赖”。
 
@@ -20,7 +20,7 @@
 - 生成危险路径字符串，但绝不执行
 - 从示例 payload 派生 fuzz case；无示例时可按 schema 合成最小有效请求
 - transcript 结构校验、重复 case 稳定性校验、按类别错误码稳定性校验
-- 去重、severity 分级、Markdown/JSON/JUnit 报告
+- 去重、severity 分级、Markdown/JSON/JUnit/SARIF 报告
 - `--output` 自动创建父目录
 - `--check warning|error` 可直接作为 CI gate
 
@@ -160,8 +160,9 @@ mcp-schema-fuzzer check outputs/example/filesystem.json --check warning
 - `outputs/run/report.md`
 - `outputs/run/report.json`
 - `outputs/run/report.xml`
+- `outputs/run/report.sarif`
 
-JSON 适合程序读取，Markdown 适合代码审查，JUnit XML 适合 CI 平台展示。
+JSON 适合程序读取，Markdown 适合代码审查，JUnit XML 适合 CI 平台展示，SARIF 适合上传到 GitHub Code Scanning，把 `invalid_input_accepted`、`unstable_case_response`、`missing_transcript` 等输入契约问题显示在安全扫描视图中。
 
 ## 隐私与安全边界
 
@@ -186,6 +187,26 @@ GitHub Actions 示例已包含在 `.github/workflows/ci.yml`。如果你想在�
 python -m mcp_schema_fuzzer fuzz suites/main/suite.json --output artifacts/fuzz/report --check warning
 ```
 
+如果要把 MCP 输入契约问题上传到 GitHub Code Scanning，可在 workflow 里加入：
+
+```yaml
+permissions:
+  contents: read
+  security-events: write
+
+steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-python@v5
+    with:
+      python-version: "3.12"
+  - run: python -m pip install git+https://github.com/yanqr213/mcp-schema-fuzzer.git
+  - run: python -m mcp_schema_fuzzer fuzz suites/main/suite.json --output artifacts/fuzz/report --check error
+  - uses: github/codeql-action/upload-sarif@v3
+    if: always()
+    with:
+      sarif_file: artifacts/fuzz/report.sarif
+```
+
 ## 示例
 
 - `examples/filesystem-tool`
@@ -195,7 +216,7 @@ python -m mcp_schema_fuzzer fuzz suites/main/suite.json --output artifacts/fuzz/
 
 ## English
 
-`mcp-schema-fuzzer` is an offline Python CLI for validating MCP and agent-tool input contracts. It reads schema files, example calls, and recorded transcripts, generates invalid boundary cases, checks whether those cases are rejected consistently, and emits Markdown, JSON, and JUnit reports for local review and CI gating.
+`mcp-schema-fuzzer` is an offline Python CLI for validating MCP and agent-tool input contracts. It reads schema files, example calls, and recorded transcripts, generates invalid boundary cases, checks whether those cases are rejected consistently, and emits Markdown, JSON, JUnit, and SARIF reports for local review, CI gating, and GitHub Code Scanning.
 
 Core commands:
 
@@ -217,3 +238,8 @@ Typical flow:
 2. Add one or more valid example payloads.
 3. Record invalid-input transcripts offline.
 4. Run `fuzz` and gate your CI with `--check warning` or `--check error`.
+
+SARIF output:
+
+- `report.sarif` uses SARIF 2.1.0.
+- Upload it with `github/codeql-action/upload-sarif@v3` to show MCP contract failures in GitHub Code Scanning.

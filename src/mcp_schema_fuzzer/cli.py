@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 from .engine import run_fuzz
 from .generator import find_case, generate_cases
@@ -68,6 +69,7 @@ def cmd_fuzz(args) -> int:
     print(f"Markdown: {paths['markdown']}")
     print(f"JSON: {paths['json']}")
     print(f"JUnit: {paths['junit']}")
+    print(f"SARIF: {paths['sarif']}")
     for finding in top_findings(report):
         print(f"[{finding['severity']}] {finding['code']}: {finding['message']}")
     if args.check and not gate_report(report, args.check):
@@ -125,7 +127,7 @@ def cmd_check(args) -> int:
     return 0
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.command == "validate-fixtures":

@@ -47,6 +47,8 @@ class CliTests(unittest.TestCase):
                 exit_code = main(["fuzz", str(suite_path), "--output", str(Path(tmp) / "out" / "report")])
             self.assertEqual(exit_code, 0)
             self.assertTrue((Path(tmp) / "out" / "report.json").exists())
+            self.assertTrue((Path(tmp) / "out" / "report.sarif").exists())
+            self.assertIn("SARIF:", stdout.getvalue())
 
     def test_check_command_passes(self):
         with tempfile.TemporaryDirectory() as tmp:

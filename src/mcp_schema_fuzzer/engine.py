@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from .generator import generate_cases
 from .models import Finding, FuzzCase, Suite
@@ -14,7 +15,7 @@ def _finding(
     code: str,
     message: str,
     target: str,
-    case: FuzzCase | None = None,
+    case: Optional[FuzzCase] = None,
     **details: Any,
 ) -> Finding:
     return Finding(
@@ -72,6 +73,9 @@ def run_fuzz(suite: Suite) -> Dict[str, Any]:
             {
                 "id": target.id,
                 "kind": target.kind,
+                "schema_uri": _path_uri(target.schema_path, suite.root),
+                "examples_uri": _path_uri(target.examples_path, suite.root) if target.examples_path else None,
+                "transcripts_uri": _path_uri(target.transcripts_path, suite.root) if target.transcripts_path else None,
                 "case_count": len(cases),
                 "finding_count": len(findings),
             }
@@ -87,6 +91,16 @@ def _load_schema(path):
     from .utils import load_json
 
     return load_json(path)
+
+
+def _path_uri(path: Path, fallback_base: Path) -> str:
+    resolved = path.resolve()
+    for base in (Path.cwd().resolve(), fallback_base.resolve()):
+        try:
+            return resolved.relative_to(base).as_posix()
+        except ValueError:
+            continue
+    return resolved.as_posix()
 
 
 def analyze_target(target_id: str, cases: List[FuzzCase], transcripts) -> List[Finding]:
