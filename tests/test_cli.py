@@ -16,10 +16,54 @@ class CliTests(unittest.TestCase):
         parsed = parser.parse_args(["check", "report.json", "--check", "warning"])
         self.assertEqual(parsed.command, "check")
 
+    def test_build_parser_knows_import_recorder_snapshot(self):
+        parser = build_parser()
+        parsed = parser.parse_args(["import-recorder-snapshot", "snapshot.json", "--out-dir", "suite"])
+        self.assertEqual(parsed.command, "import-recorder-snapshot")
+
     def test_init_suite_creates_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = init_suite(str(Path(tmp) / "starter"))
             self.assertTrue((root / "suite.json").exists())
+
+    def test_import_recorder_snapshot_command_creates_valid_suite(self):
+        snapshot = {
+            "format": "mcp-contract-recorder.snapshot/v1",
+            "recorderVersion": "0.3.0",
+            "createdAt": "2026-06-09T00:00:00Z",
+            "tools": {
+                "echo": {
+                    "name": "echo",
+                    "inputSchema": {"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]},
+                    "examples": [{"input": {"text": "hi"}, "output": {"text": "hi"}}],
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            snapshot_path = root / "snapshot.json"
+            snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = main(["import-recorder-snapshot", str(snapshot_path), "--out-dir", str(root / "suite"), "--name", "echo-suite"])
+            with contextlib.redirect_stdout(io.StringIO()):
+                validate_code = main(["validate-fixtures", str(root / "suite" / "suite.json")])
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(validate_code, 0)
+        self.assertIn("Imported recorder snapshot", stdout.getvalue())
+
+    def test_import_recorder_snapshot_command_reports_bad_snapshot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            snapshot_path = root / "empty.json"
+            snapshot_path.write_text(json.dumps({"tools": {}}), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                exit_code = main(["import-recorder-snapshot", str(snapshot_path), "--out-dir", str(root / "suite")])
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("does not contain any tools", stderr.getvalue())
 
     def test_validate_fixtures_success(self):
         with tempfile.TemporaryDirectory() as tmp:

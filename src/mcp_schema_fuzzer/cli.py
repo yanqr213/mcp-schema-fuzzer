@@ -5,9 +5,11 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
+from . import __version__
 from .engine import run_fuzz
 from .generator import find_case, generate_cases
 from .init_suite import init_suite
+from .recorder_import import import_recorder_snapshot
 from .reports import gate_report, summarize_for_console, top_findings, write_report_bundle
 from .suite import load_examples, load_suite, load_suite_and_validate
 from .utils import load_json, resolve_output_base
@@ -15,6 +17,7 @@ from .utils import load_json, resolve_output_base
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="mcp-schema-fuzzer", description="Offline schema fuzzing for MCP servers and agent tools.")
+    parser.add_argument("--version", action="version", version=f"mcp-schema-fuzzer {__version__}")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     fuzz_parser = subparsers.add_parser("fuzz", help="Generate fuzz cases, validate transcripts, and write reports.")
@@ -28,6 +31,21 @@ def build_parser() -> argparse.ArgumentParser:
     init_parser = subparsers.add_parser("init-suite", help="Create a starter suite directory.")
     init_parser.add_argument("path", help="Directory to create")
     init_parser.add_argument("--force", action="store_true", help="Allow writing into a non-empty destination")
+
+    import_parser = subparsers.add_parser(
+        "import-recorder-snapshot",
+        help="Create a fuzzer suite from an mcp-contract-recorder snapshot.",
+    )
+    import_parser.add_argument("snapshot", help="Path to an mcp-contract-recorder snapshot JSON file.")
+    import_parser.add_argument("--out-dir", required=True, help="Destination suite directory.")
+    import_parser.add_argument("--name", help="Suite name. Defaults to a generated name.")
+    import_parser.add_argument("--description", help="Suite description.")
+    import_parser.add_argument("--force", action="store_true", help="Allow writing into a non-empty destination.")
+    import_parser.add_argument(
+        "--include-empty-examples",
+        action="store_true",
+        help="Write a synthetic empty example when a tool has no recorded input examples.",
+    )
 
     explain_parser = subparsers.add_parser("explain", help="Explain why a generated case exists.")
     explain_parser.add_argument("suite", help="Path to suite.json")
@@ -84,6 +102,20 @@ def cmd_init_suite(args) -> int:
     return 0
 
 
+def cmd_import_recorder_snapshot(args) -> int:
+    snapshot = load_json(Path(args.snapshot))
+    paths = import_recorder_snapshot(
+        snapshot,
+        args.out_dir,
+        suite_name=args.name or "",
+        description=args.description or "",
+        force=args.force,
+        include_empty_examples=args.include_empty_examples,
+    )
+    print(f"Imported recorder snapshot -> {paths['suite']}")
+    return 0
+
+
 def cmd_explain(args) -> int:
     suite, validation = load_suite_and_validate(args.suite)
     if validation.errors:
@@ -130,15 +162,21 @@ def cmd_check(args) -> int:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.command == "validate-fixtures":
-        return cmd_validate(args)
-    if args.command == "fuzz":
-        return cmd_fuzz(args)
-    if args.command == "init-suite":
-        return cmd_init_suite(args)
-    if args.command == "explain":
-        return cmd_explain(args)
-    if args.command == "check":
-        return cmd_check(args)
+    try:
+        if args.command == "validate-fixtures":
+            return cmd_validate(args)
+        if args.command == "fuzz":
+            return cmd_fuzz(args)
+        if args.command == "init-suite":
+            return cmd_init_suite(args)
+        if args.command == "import-recorder-snapshot":
+            return cmd_import_recorder_snapshot(args)
+        if args.command == "explain":
+            return cmd_explain(args)
+        if args.command == "check":
+            return cmd_check(args)
+    except (FileExistsError, FileNotFoundError, OSError, ValueError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     parser.error("unknown command")
     return 1

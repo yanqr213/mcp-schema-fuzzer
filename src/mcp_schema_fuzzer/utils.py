@@ -10,7 +10,7 @@ PATHISH_TOKENS = {"path", "file", "filepath", "filename", "dir", "folder", "uri"
 
 
 def load_json(path: Path) -> Any:
-    with path.open("r", encoding="utf-8") as handle:
+    with path.open("r", encoding="utf-8-sig") as handle:
         return json.load(handle)
 
 

@@ -24,5 +24,34 @@ jobs:
         run: python -m mcp_schema_fuzzer validate-fixtures examples/filesystem-tool/suite.json
       - name: Run fuzz smoke
         run: python -m mcp_schema_fuzzer fuzz examples/filesystem-tool/suite.json --output work/ci/filesystem --check error
+      - name: Import recorder snapshot smoke
+        shell: bash
+        run: |
+          cat > work/ci/recorder-snapshot.json <<'JSON'
+          {
+            "format": "mcp-contract-recorder.snapshot/v1",
+            "recorderVersion": "0.3.0",
+            "createdAt": "2026-06-09T00:00:00Z",
+            "metadata": {"recorder": "mcp-contract-recorder", "callCount": 1},
+            "tools": {
+              "search.docs": {
+                "name": "search.docs",
+                "inputSchema": {
+                  "type": "object",
+                  "required": ["query"],
+                  "properties": {
+                    "query": {"type": "string"},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 10}
+                  }
+                },
+                "examples": [{"input": {"query": "mcp", "limit": 3}, "output": {"items": []}}],
+                "errors": [{"code": "VALIDATION_ERROR", "count": 1}],
+                "compatibility": {"inputSchemaHash": "ci"}
+              }
+            }
+          }
+          JSON
+          python -m mcp_schema_fuzzer import-recorder-snapshot work/ci/recorder-snapshot.json --out-dir work/ci/from-recorder --name ci-recorder-suite
+          python -m mcp_schema_fuzzer validate-fixtures work/ci/from-recorder/suite.json
       - name: Validate SARIF smoke output
         run: python -m json.tool work/ci/filesystem.sarif

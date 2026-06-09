@@ -52,6 +52,7 @@ def run_fuzz(suite: Suite) -> Dict[str, Any]:
     report: Dict[str, Any] = {
         "suite": suite.name,
         "description": suite.description,
+        "metadata": suite.metadata,
         "targets": [],
         "cases": [],
         "findings": [],
@@ -76,6 +77,7 @@ def run_fuzz(suite: Suite) -> Dict[str, Any]:
                 "schema_uri": _path_uri(target.schema_path, suite.root),
                 "examples_uri": _path_uri(target.examples_path, suite.root) if target.examples_path else None,
                 "transcripts_uri": _path_uri(target.transcripts_path, suite.root) if target.transcripts_path else None,
+                "metadata": target.metadata,
                 "case_count": len(cases),
                 "finding_count": len(findings),
             }

@@ -15,10 +15,11 @@
 
 - 零运行时依赖，Python 3.9+
 - 可安装 CLI：`mcp-schema-fuzzer`
-- 子命令：`fuzz`、`validate-fixtures`、`init-suite`、`explain`、`check`
+- 子命令：`fuzz`、`validate-fixtures`、`init-suite`、`import-recorder-snapshot`、`explain`、`check`
 - 支持对象、数组、字符串、整数、数字、布尔值、enum、required、min/max 边界
 - 生成危险路径字符串，但绝不执行
 - 从示例 payload 派生 fuzz case；无示例时可按 schema 合成最小有效请求
+- 可从 `mcp-contract-recorder` 快照直接生成 fuzzer suite
 - transcript 结构校验、重复 case 稳定性校验、按类别错误码稳定性校验
 - 去重、severity 分级、Markdown/JSON/JUnit/SARIF 报告
 - `--output` 自动创建父目录
@@ -67,6 +68,19 @@ mcp-schema-fuzzer explain examples/filesystem-tool/suite.json filesystem.read.da
 ```bash
 mcp-schema-fuzzer check outputs/example/filesystem.json --check warning
 ```
+
+从 `mcp-contract-recorder` 快照生成 fuzzer suite：
+
+```bash
+mcp-schema-fuzzer import-recorder-snapshot contract-snapshot.json \
+  --out-dir work/contract-suite \
+  --name my-tools-fuzz
+
+mcp-schema-fuzzer validate-fixtures work/contract-suite/suite.json
+mcp-schema-fuzzer fuzz work/contract-suite/suite.json --output outputs/contract/report
+```
+
+导入器会复制 snapshot 里的 `inputSchema` 和已脱敏的正常调用 examples，并把 recorder 版本、schema hash、观察到的错误码等写进 suite metadata。它不会伪造非法输入 transcript；你应该先查看 `fuzz` 生成的 case id，再离线录制对应拒绝响应。
 
 ## Suite 输入格式
 
@@ -153,6 +167,15 @@ mcp-schema-fuzzer check outputs/example/filesystem.json --check warning
 5. 在 PR / CI 中使用 `--check warning` 或 `--check error` 作为 gate。
 6. 用 `explain` 帮助开发者理解某个 case 为什么被生成、其 severity 是什么。
 
+如果你已经用 `mcp-contract-recorder` 录制过契约，可以直接导入：
+
+```bash
+mcp-schema-fuzzer import-recorder-snapshot contract-snapshot.json --out-dir suites/from-recorder
+mcp-schema-fuzzer fuzz suites/from-recorder/suite.json --output artifacts/fuzz/report --check warning
+```
+
+这让“录制真实工具契约 → 生成边界 fuzz suite → 在 CI 中检查拒绝响应稳定性”成为一条离线链路。
+
 ## 报告输出
 
 给定 `--output outputs/run/report`，会生成：
@@ -223,6 +246,7 @@ Core commands:
 - `fuzz`
 - `validate-fixtures`
 - `init-suite`
+- `import-recorder-snapshot`
 - `explain`
 - `check`
 
@@ -238,6 +262,18 @@ Typical flow:
 2. Add one or more valid example payloads.
 3. Record invalid-input transcripts offline.
 4. Run `fuzz` and gate your CI with `--check warning` or `--check error`.
+
+Import from an `mcp-contract-recorder` snapshot:
+
+```bash
+mcp-schema-fuzzer import-recorder-snapshot contract-snapshot.json \
+  --out-dir work/contract-suite \
+  --name my-tools-fuzz
+mcp-schema-fuzzer validate-fixtures work/contract-suite/suite.json
+mcp-schema-fuzzer fuzz work/contract-suite/suite.json --output outputs/contract/report
+```
+
+The importer copies recorded `inputSchema` objects and redacted valid examples, then stores recorder version, schema hashes, stats, and observed error codes in suite metadata. It does not invent invalid-input transcripts; record those after reviewing generated case IDs.
 
 SARIF output:
 

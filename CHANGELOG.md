@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 - 2026-06-09
+
+- Added `import-recorder-snapshot` to build a fuzzer suite directly from an `mcp-contract-recorder` snapshot.
+- Added suite and target metadata loading so imported recorder version, schema hashes, stats, and observed error codes survive into JSON reports.
+- Added CLI version output and CI smoke coverage for recorder snapshot import.
+- Updated Chinese and English documentation for the recorder-to-fuzzer workflow.
+
 ## 0.2.0 - 2026-06-08
 
 - Added SARIF 2.1.0 report output for GitHub Code Scanning.

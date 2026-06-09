@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from mcp_schema_fuzzer.suite import load_examples, load_suite, load_suite_and_validate, load_transcripts, validate_suite
+from mcp_schema_fuzzer.utils import load_json
 from tests.helpers import build_basic_suite, write_json
 
 
@@ -13,6 +14,12 @@ class SuiteTests(unittest.TestCase):
             suite = load_suite(str(suite_path))
             self.assertEqual(suite.name, "test-suite")
             self.assertEqual(suite.targets[0].id, "demo.tool")
+
+    def test_load_json_accepts_utf8_bom(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "fixture.json"
+            path.write_text('\ufeff{"ok": true}', encoding="utf-8")
+            self.assertEqual(load_json(path), {"ok": True})
 
     def test_load_examples_returns_examples(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -12,6 +12,7 @@ class Target:
     schema_path: Path
     examples_path: Optional[Path] = None
     transcripts_path: Optional[Path] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -20,6 +21,7 @@ class Suite:
     description: str
     root: Path
     targets: List[Target]
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

@@ -12,6 +12,7 @@ def load_suite(suite_path: str) -> Suite:
     data = load_json(path)
     name = str(data.get("name", path.stem))
     description = str(data.get("description", ""))
+    metadata = dict(data.get("metadata") or {})
     targets = []
     for raw_target in data.get("targets", []):
         targets.append(
@@ -21,9 +22,10 @@ def load_suite(suite_path: str) -> Suite:
                 schema_path=(path.parent / raw_target["schema"]).resolve(),
                 examples_path=((path.parent / raw_target["examples"]).resolve() if raw_target.get("examples") else None),
                 transcripts_path=((path.parent / raw_target["transcripts"]).resolve() if raw_target.get("transcripts") else None),
+                metadata=dict(raw_target.get("metadata") or {}),
             )
         )
-    return Suite(name=name, description=description, root=path.parent, targets=targets)
+    return Suite(name=name, description=description, root=path.parent, targets=targets, metadata=metadata)
 
 
 def load_examples(path: Path) -> List[Dict[str, Any]]:
